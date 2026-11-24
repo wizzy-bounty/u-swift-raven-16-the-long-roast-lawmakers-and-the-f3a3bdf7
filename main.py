@@ -48,15 +48,24 @@ def validate(text: str) -> str:
     return cleaned
 
 
+def validate_entry(text: str) -> str | None:
+    """Run the self-check; return an error message, or None if valid."""
+    try:
+        validate(text)
+    except ValueError as exc:
+        return str(exc)
+    return None
+
+
 def main() -> int:
     # ENTRY_OVERRIDE exists only to test the self-check locally; the
     # grader runs with no environment, so the shipped sentence is used.
     text = os.environ.get("ENTRY_OVERRIDE", SENTENCE)
-    try:
-        entry = validate(text)
-    except ValueError as exc:
-        print(f"self-check failed: {exc}", file=sys.stderr)
+    error = validate_entry(text)
+    if error is not None:
+        print(f"self-check failed: {error}", file=sys.stderr)
         return 1
+    entry = validate(text)
     out_path = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_path, exist_ok=True)
     with open(os.path.join(out_path, "entry.txt"), "w",
